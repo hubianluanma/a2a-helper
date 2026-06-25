@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `a2a-server` default `--host` switched from `127.0.0.1` to `0.0.0.0` so
+  agents on other machines can connect out of the box. To restrict to
+  loopback, pass `--host 127.0.0.1`. See SECURITY.md for implications.
+
 ## [0.1.0] - 2026-06-25
 
 ### Added

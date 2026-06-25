@@ -39,17 +39,37 @@ uv sync --all-extras --dev      # 创建 .venv/ 并装好运行时 + dev 依赖
 ## 3. 启动 hub
 
 ```bash
-# 默认监听 127.0.0.1:8765,DB 在 ~/.a2a/a2a.db
+# 默认监听 0.0.0.0:8765(任何能访问本机 8765 端口的主机都能连),DB 在 ~/.a2a/a2a.db
 uv run -m a2a.server
 ```
 
-换一个端口:
+换一个端口,或只允许本机访问:
 
 ```bash
 uv run -m a2a.server --port 9000
+uv run -m a2a.server --host 127.0.0.1     # 只允许本机连接
 ```
 
 服务在前台跑就行;要后台用 `nohup ... &` 或 `tmux`。
+
+> 默认监听 `0.0.0.0` 是为了开箱就能跨机器协作;在公共/不可信网络上请加 `--host 127.0.0.1` 或前置反向代理加认证(见 SECURITY.md)。
+
+### 跨机器使用
+
+hub 跑在 Alice 的机器(假设 IP `10.0.0.5`),Bob 的机器想加入:
+
+```bash
+# Bob 的机器(客户端):直接指向 Alice 的 IP
+uv run -m a2a.client --id bob --name "Bob's Cursor" \
+    --base http://10.0.0.5:8765 --ws ws://10.0.0.5:8765
+
+# 或用环境变量一次性设置
+export A2A_BASE=http://10.0.0.5:8765
+export A2A_WS=ws://10.0.0.5:8765
+uv run -m a2a.echo_agent --id bob-echo
+```
+
+前提:Alice 的机器防火墙放行 8765 端口,且与 Bob 在同一网络。
 
 ---
 

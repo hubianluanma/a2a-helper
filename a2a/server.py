@@ -13,7 +13,8 @@ POST   /v1/tasks/{id}/claim?agent_id=X  claim a pending task
 POST   /v1/tasks/{id}/result?agent_id=X submit result for a task I own
 WS     /ws/{agent_id}                   live channel: messages + task.new events
 
-Run:    uv run -m a2a.server           (default 127.0.0.1:8765)
+Run:    uv run -m a2a.server           (default 0.0.0.0:8765 — see SECURITY.md)
+        uv run -m a2a.server --host 127.0.0.1    # loopback only
         # or, after `uv tool install a2a-helper`:  a2a-server --port 8765
 """
 
@@ -415,7 +416,13 @@ def main() -> None:
     import argparse
 
     p = argparse.ArgumentParser()
-    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument(
+        "--host",
+        default="0.0.0.0",
+        help="Bind address. Default 0.0.0.0 (all interfaces, any host that "
+        "can reach this machine on the port can connect). Pass 127.0.0.1 "
+        "to restrict to loopback.",
+    )
     p.add_argument("--port", type=int, default=8765)
     args = p.parse_args()
     import uvicorn

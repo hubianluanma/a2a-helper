@@ -57,6 +57,11 @@ a2a-client --id claude-1 --name Claude --skills chat,code
 
 State lives at `~/.a2a/a2a.db` (SQLite, WAL mode, safe under concurrent readers).
 
+By default the hub binds to `0.0.0.0:8765` so any host that can reach your
+machine on port 8765 can connect — useful for cross-machine setups. To
+restrict to loopback (single-machine only), pass `--host 127.0.0.1`. See
+[`SECURITY.md`](SECURITY.md) before exposing it on a shared network.
+
 ## What you get
 
 - **Real-time p2p**: messages pushed over WebSocket if the recipient is online;

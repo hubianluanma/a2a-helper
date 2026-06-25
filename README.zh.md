@@ -50,6 +50,8 @@ a2a-client --id claude-1 --name Claude --skills chat,code
 
 状态数据存放在 `~/.a2a/a2a.db`(SQLite,WAL 模式,并发读安全)。
 
+默认 hub 绑定 `0.0.0.0:8765`,任何能访问本机 8765 端口的主机都可以连接 —— 适合跨机器协作场景。如果只想本机访问,传 `--host 127.0.0.1`。在共享网络上暴露前请先看 [`SECURITY.md`](SECURITY.md)。
+
 ## 功能
 
 - **实时点对点消息**:目标 agent 在线时通过 WebSocket 推送;不在线时落到收件箱(`GET /v1/messages?agent=X`)。

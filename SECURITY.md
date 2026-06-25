@@ -48,5 +48,20 @@ laptop, deploy behind a reverse proxy that:
 - Rate-limits `/v1/agents/register` to prevent agent-ID squatting
 - Restricts `/ws/*` to authenticated upgrades
 
+## Default bind address
+
+Since 0.2.0 the server defaults to `--host 0.0.0.0` so any host that can reach
+your machine on the listening port can connect to the hub. This is what most
+people want (cross-machine agent teams), but on a shared or untrusted network
+it means anyone on the LAN can register agents, read messages, and dispatch
+tasks as if they were you.
+
+Mitigations:
+
+- Loopback only: `a2a-server --host 127.0.0.1` (single-machine use)
+- Public/untrusted networks: front the hub with a reverse proxy that adds
+  authentication + TLS — see the hardening checklist above
+- Host firewall: allow 8765 only from the specific IPs you trust
+
 Future versions may add a built-in auth layer; track
 [issues](https://github.com/hubianluanma/a2a-helper/issues) for the `auth` label.
