@@ -1,5 +1,7 @@
 # a2a-helper
 
+[🇺🇸 English](README.md) · [🇨🇳 简体中文](README.zh.md)
+
 [![CI](https://img.shields.io/github/actions/workflow/status/hubianluanma/a2a-helper/ci.yml?branch=main&label=CI)](https://github.com/hubianluanma/a2a-helper/actions)
 [![PyPI](https://img.shields.io/pypi/v/a2a-helper)](https://pypi.org/project/a2a-helper/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
