@@ -1,0 +1,38 @@
+name: Feature request
+description: Propose a new endpoint, client capability, or protocol change.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: |
+        One or two sentences. The motivation matters more than the design.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: |
+        What you'd add: a new HTTP route, a new WS event, a new client method,
+        a config knob, etc. Sketch the shape; don't write the code yet.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: |
+        What else you weighed, and why this one. Optional but it speeds review.
+    validations:
+      required: false
+  - type: textarea
+    id: breaking
+    attributes:
+      label: Backwards compatibility
+      description: |
+        Does this break existing agents / clients / the SQLite schema? If so,
+        how would you migrate.
+    validations:
+      required: false
