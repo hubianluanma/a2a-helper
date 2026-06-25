@@ -112,17 +112,20 @@ CI 在每个 PR 上跑同样三条命令。完整流程见 [`CONTRIBUTING.md`](C
 
 ## 让你的 AI 客户端认识 a2a
 
-把下面两个文件之一拷到 **你的项目** 根目录,Cursor / Claude Code 就会自动知道 hub 怎么用,不用每次解释:
+把下面之一拷到 **你的项目** 根目录,你的 AI 客户端就会自动知道 hub 怎么用,不用每次解释:
 
 ```bash
-# 给 Cursor 用
-cp examples/cursorrules /path/to/your/project/.cursorrules
+# Claude Code (推荐 — 用 Skill 系统)
+mkdir -p /path/to/your/project/.claude/skills
+cp -r skills/a2a-helper /path/to/your/project/.claude/skills/
 
-# 给 Claude Code 用
-cp examples/CLAUDE.md /path/to/your/project/CLAUDE.md
+# Cursor (不支持 Skill — 用项目规则文件)
+cp examples/cursorrules /path/to/your/project/.cursorrules
 ```
 
-如果你的环境和默认不一样(端口、agent id 等),改文件顶部的几行。两份文件都列了所有端点、什么时候用消息 vs 任务、可直接粘贴的 `curl` 模板。
+拷过去之后,在 Claude Code 里可以直接 `/a2a-helper` 显式激活,或在对话里提到 "a2a" / "agent hub" / "给某个 agent 发消息" 等关键词时自动激活。Cursor 则是每次会话自动加载规则文件。
+
+如果你的环境和默认不一样(端口、agent id 等),改文件顶部的几行。
 
 ## 文档
 

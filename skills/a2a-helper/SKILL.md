@@ -1,21 +1,30 @@
-# Drop this file at your project root as `CLAUDE.md` so Claude Code knows
-# how to talk to a2a-helper. Adjust the agent id and hub address below if
-# your setup differs.
+---
+name: a2a-helper
+description: |
+  Communicate with other AI agents through the local a2a-helper hub —
+  send p2p messages, dispatch async tasks, list online agents, claim
+  and submit tasks. Use when the user mentions "a2a", "a2a-helper",
+  "agent hub", "send to <agent>", "tell <agent> to ...", "dispatch a
+  task", "list agents", "task status", or "is <agent> online".
+---
 
 # a2a-helper
 
-This project uses [a2a-helper](https://github.com/hubianluanma/a2a-helper),
-a local HTTP+WebSocket hub for inter-agent messaging and async tasks. Use it
-instead of writing scratch files, ad-hoc HTTP servers, or any other manual
-channel to talk to other AI agents (Cursor, Aider, other Claude Code sessions).
+Local HTTP + WebSocket hub for inter-agent messaging and async tasks.
+Any process that can speak HTTP+WS (Claude Code, Cursor, Aider, your own
+scripts) registers as an agent and exchanges p2p messages or dispatches
+tasks to other agents.
+
+> Repo: https://github.com/hubianluanma/a2a-helper
 
 ## Hub
 
 - HTTP base: `http://127.0.0.1:8765` (default — confirm with the user if unsure)
 - WS:        `ws://127.0.0.1:8765`
 - This session's agent id: `claude-main` (change if the user has a different setup)
-- DB / state: `~/.a2a/a2a.db`
-- Bind: by default `0.0.0.0` (LAN-reachable) — pass `--host 127.0.0.1` to restrict
+- State:     `~/.a2a/a2a.db` (SQLite, WAL mode)
+- Bind:      by default `0.0.0.0` (LAN-reachable). Use `--host 127.0.0.1`
+  on untrusted networks.
 
 ## Endpoints
 
@@ -28,45 +37,60 @@ channel to talk to other AI agents (Cursor, Aider, other Claude Code sessions).
 | List tasks                   | `GET  /v1/tasks?agent=Y&status=pending`             | filter by `status` (`pending` / `claimed` / `done`)           |
 | Get task detail              | `GET  /v1/tasks/{id}`                               | returns `status` and `output`                                 |
 | Claim a task                 | `POST /v1/tasks/{id}/claim?agent_id=Y`              | worker-side; sets status to `claimed`                         |
-| Submit task result           | `POST /v1/tasks/{id}/result?agent_id=Y`             | `{"output":{...}}`; sets status to `done`                    |
+| Submit task result           | `POST /v1/tasks/{id}/result?agent_id=Y`             | `{"output":{...}}`; sets status to `done`                     |
 | List online agents           | `GET  /v1/agents`                                   | `ws_active: true` means live                                  |
 | Live events                  | `WS   /ws/{agent_id}`                               | server pushes `message`, `task.new`, `task.done`, `agent.online`, `agent.offline` |
 
-## When to use what
+## Decision: message vs task
 
-- "Tell X ..." / "Send X a message" → `POST /v1/messages` (fire-and-forget)
-- "Give X a task to ..." → `POST /v1/tasks`, then poll `GET /v1/tasks/{id}`
-  until `status == "done"` (action with a result)
-- "What agents are online?" → `GET /v1/agents`
-- "Did anyone message me?" → `GET /v1/messages?agent=claude-main`
+| User says...                       | Use                                     |
+|------------------------------------|-----------------------------------------|
+| "Tell X ..." / "Send X a message"  | `POST /v1/messages` (fire-and-forget)   |
+| "Give X a task to ..."             | `POST /v1/tasks` + poll until `done`    |
+| "Did anyone message me?"           | `GET /v1/messages?agent=claude-main`    |
+| "What's the status of task <id>?"  | `GET /v1/tasks/<id>`                    |
+| "Who is online?"                   | `GET /v1/agents`                        |
 
-## Calling convention
+A message has no result. A task has a result the worker returns via
+`POST /v1/tasks/{id}/result`; the originator polls until `status == "done"`.
 
-Use `curl -s` and pipe JSON through `python3 -m json.tool` for readable output.
-**Do not run `a2a-client` interactively in a Bash tool call** — it's an
-interactive REPL that will hang the tool call.
+## Ready-to-paste templates
+
+Always use `curl -s` and pipe JSON through `python3 -m json.tool` for readable
+output. **Never run `a2a-client` interactively in a Bash tool call** — it's
+a REPL and will hang.
 
 ```bash
-# register (idempotent — safe to call every session)
+# register self (idempotent — safe at the start of each session)
 curl -s -X POST http://127.0.0.1:8765/v1/agents/register \
   -H 'Content-Type: application/json' \
   -d '{"id":"claude-main","name":"Claude Code","skills":["chat","code"]}'
 
-# send a message
+# send a p2p message
 curl -s -X POST 'http://127.0.0.1:8765/v1/messages?from_agent=claude-main' \
   -H 'Content-Type: application/json' \
   -d '{"to_agent":"alice","content":{"text":"start working"}}'
 
-# dispatch a task and wait for it
+# dispatch a task and wait for the result
 TID=$(curl -s -X POST 'http://127.0.0.1:8765/v1/tasks?from_agent=claude-main' \
   -H 'Content-Type: application/json' \
   -d '{"to_agent":"echo","type":"echo","input":{"msg":"ping"}}' \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["task_id"])')
 while [ "$(curl -s http://127.0.0.1:8765/v1/tasks/$TID | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')" != "done" ]; do sleep 0.5; done
 curl -s http://127.0.0.1:8765/v1/tasks/$TID
+
+# worker side: claim + execute + submit
+TID=$(curl -s 'http://127.0.0.1:8765/v1/tasks?agent=claude-main&status=pending' \
+  | python3 -c 'import sys,json;ts=json.load(sys.stdin);print(ts[-1]["id"] if ts else "")')
+[ -z "$TID" ] && echo "no pending tasks" && exit 0
+curl -s -X POST "http://127.0.0.1:8765/v1/tasks/$TID/claim?agent_id=claude-main"
+# ... do the work ...
+curl -s -X POST "http://127.0.0.1:8765/v1/tasks/$TID/result?agent_id=claude-main" \
+  -H 'Content-Type: application/json' \
+  -d '{"output":{"result":"..."}}'
 ```
 
-A Python helper is also available in this project's venv:
+The Python helper is also available in the project venv:
 
 ```bash
 uv run -c "
@@ -82,9 +106,11 @@ asyncio.run(main())
 
 ## Don't
 
-- Don't pass messages via shared files, `/tmp` drops, or ad-hoc HTTP servers — use the hub.
-- Don't open raw WebSockets from inside a tool call — the existing `a2a-client` CLI
-  and `a2a.client.A2AClient` already handle the WS lifecycle.
+- Don't pass messages via shared files, `/tmp` drops, or ad-hoc HTTP servers
+  — use the hub.
+- Don't open raw WebSockets from inside a tool call — `a2a-client` CLI and
+  `a2a.client.A2AClient` already manage the WS lifecycle.
+- Don't run `a2a-client` interactively — it's a REPL, not a one-shot CLI.
 
 ## Setup status check
 
@@ -99,3 +125,9 @@ If `down`, start the hub (ask the user first if this is their machine):
 ```bash
 nohup uv run -m a2a.server > ~/.a2a/hub.log 2>&1 &
 ```
+
+## Cross-machine
+
+If the hub runs on a different host, replace `127.0.0.1` with that host's
+IP (e.g. `http://172.16.22.238:8765`). Make sure the hub's host firewall
+allows the port — see [SECURITY.md](https://github.com/hubianluanma/a2a-helper/blob/main/SECURITY.md).
