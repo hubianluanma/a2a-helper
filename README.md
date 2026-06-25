@@ -125,6 +125,23 @@ uv run pytest              # all 3 smoke tests must pass
 CI runs the same three commands on every PR. See
 [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full workflow.
 
+## Teach your AI client about a2a
+
+Drop one of these into **your project's** root so Cursor / Claude Code knows
+the hub exists and how to call it without you explaining every time:
+
+```bash
+# for Cursor
+cp examples/cursorrules /path/to/your/project/.cursorrules
+
+# for Claude Code
+cp examples/CLAUDE.md /path/to/your/project/CLAUDE.md
+```
+
+Edit the `agent id` and hub address at the top if your setup differs from the
+defaults. Both files list the endpoints, when to use messages vs tasks, and
+ready-to-paste `curl` templates.
+
 ## Documentation
 
 - [`docs/CURSOR_USAGE.md`](docs/CURSOR_USAGE.md) — end-to-end usage with Cursor

@@ -110,6 +110,20 @@ uv run pytest              # 3 个 smoke 测试必须通过
 
 CI 在每个 PR 上跑同样三条命令。完整流程见 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
 
+## 让你的 AI 客户端认识 a2a
+
+把下面两个文件之一拷到 **你的项目** 根目录,Cursor / Claude Code 就会自动知道 hub 怎么用,不用每次解释:
+
+```bash
+# 给 Cursor 用
+cp examples/cursorrules /path/to/your/project/.cursorrules
+
+# 给 Claude Code 用
+cp examples/CLAUDE.md /path/to/your/project/CLAUDE.md
+```
+
+如果你的环境和默认不一样(端口、agent id 等),改文件顶部的几行。两份文件都列了所有端点、什么时候用消息 vs 任务、可直接粘贴的 `curl` 模板。
+
 ## 文档
 
 - [`docs/CURSOR_USAGE.md`](docs/CURSOR_USAGE.md) — 以 Cursor 为示例的端到端用法
