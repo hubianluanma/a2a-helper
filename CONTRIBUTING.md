@@ -5,22 +5,24 @@ focused, keep the diff small, keep the test count small.
 
 ## Setup
 
+Requires [uv](https://docs.astral.sh/uv/) ≥ 0.4.
+
 ```bash
 git clone https://github.com/hubianluanma/a2a-helper
 cd a2a-helper
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+uv sync --all-extras --dev
 ```
 
 ## Before opening a PR
 
 ```bash
-ruff check .          # lint
-ruff format .         # autoformat (run if your editor doesn't)
-pytest                # all 3 smoke tests must pass
+uv run ruff check .        # lint
+uv run ruff format .       # autoformat (run if your editor doesn't)
+uv run pytest              # all 3 smoke tests must pass
 ```
 
-CI runs the same three commands on Linux + Python 3.10/3.11/3.12.
+CI runs the same three commands (via `astral-sh/setup-uv`) on Linux +
+Python 3.12.
 
 ## Commit messages
 

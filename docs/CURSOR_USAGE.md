@@ -25,12 +25,14 @@
 
 ## 2. 安装
 
+依赖通过 [uv](https://docs.astral.sh/uv/)(`uv ≥ 0.4`)管理,`pyproject.toml` 是单一来源。
+
 ```bash
 git clone <你的仓库> a2a && cd a2a
-pip install -r requirements.txt
+uv sync --all-extras --dev      # 创建 .venv/ 并装好运行时 + dev 依赖
 ```
 
-需要 Python 3.10+。
+需要 Python 3.10+。没装 uv 的:`pip install -e ".[dev]"` 仍然可用(`pyproject.toml` 兼容 pip)。
 
 ---
 

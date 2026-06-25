@@ -18,15 +18,27 @@ SQLite file, zero external services.
 
 ## Install
 
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) (`uv ≥ 0.4`).
+`pyproject.toml` is the single source of truth; `uv.lock` pins exact versions.
+
+From this checkout (development mode, includes dev extras):
+
 ```bash
-pip install a2a-helper
+git clone https://github.com/hubianluanma/a2a-helper
+cd a2a-helper
+uv sync --all-extras --dev      # creates .venv/ with runtime + dev deps
 ```
 
-Or from this checkout:
+Published releases (once uploaded to a registry):
 
 ```bash
-pip install -e ".[dev]"     # adds pytest + ruff
+uvx a2a-server --port 8765      # run without installing, like npx
+# or
+uv tool install a2a-helper      # install CLI as global commands
 ```
+
+> Don't have uv? `pip install -e ".[dev]"` still works — `pyproject.toml` is
+> a standards-compliant build descriptor, not uv-specific.
 
 ## Quick start
 
@@ -98,9 +110,9 @@ docs/               # usage guides
 ## Development
 
 ```bash
-ruff check .        # lint
-ruff format .       # autoformat
-pytest              # all 3 smoke tests must pass
+uv run ruff check .        # lint
+uv run ruff format .       # autoformat
+uv run pytest              # all 3 smoke tests must pass
 ```
 
 CI runs the same three commands on every PR. See
