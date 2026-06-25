@@ -127,24 +127,24 @@ CI runs the same three commands on every PR. See
 
 ## Teach your AI client about a2a
 
-Drop one of these into **your project's** root so your AI client knows the
-hub exists and how to call it without you explaining every time:
+Drop the skill into **your project's** root. Both Claude Code and Cursor
+read `.claude/skills/`, so one copy serves both:
 
 ```bash
-# for Claude Code (recommended — uses the Skill system)
 mkdir -p /path/to/your/project/.claude/skills
 cp -r skills/a2a-helper /path/to/your/project/.claude/skills/
-
-# for Cursor (no Skill support — uses a project rule file)
-cp examples/cursorrules /path/to/your/project/.cursorrules
 ```
 
-After copying, in Claude Code you can run `/a2a-helper` to activate the skill
-explicitly, or it activates automatically when you mention "a2a" / "agent hub"
-/ "send to <agent>" etc. In Cursor the rules file loads on every session.
+For Cursor-only projects you can also use `.cursor/skills/` (same layout,
+same `SKILL.md`). The format follows the open
+[Agent Skills](https://agentskills.io) standard.
 
-Edit the `agent id` and hub address at the top if your setup differs from
-the defaults.
+After copying, in Claude Code you can run `/a2a-helper` to activate the
+skill explicitly, or it activates automatically when you mention "a2a" /
+"agent hub" / "send to <agent>" etc.
+
+Edit the `agent id` and hub address at the top of `SKILL.md` if your setup
+differs from the defaults.
 
 ## Documentation
 
