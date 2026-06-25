@@ -13,7 +13,8 @@ Library usage
 
 CLI usage
 ---------
-    python -m a2a.client --id claude-1 --name Claude
+    uv run -m a2a.client --id claude-1 --name Claude
+    # or, after `uv tool install a2a-helper`:  a2a-client --id claude-1 --name Claude
 """
 
 from __future__ import annotations

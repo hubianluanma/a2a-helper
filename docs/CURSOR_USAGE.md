@@ -40,13 +40,13 @@ uv sync --all-extras --dev      # 创建 .venv/ 并装好运行时 + dev 依赖
 
 ```bash
 # 默认监听 127.0.0.1:8765,DB 在 ~/.a2a/a2a.db
-python -m a2a.server
+uv run -m a2a.server
 ```
 
 换一个端口:
 
 ```bash
-python -m a2a.server --port 9000
+uv run -m a2a.server --port 9000
 ```
 
 服务在前台跑就行;要后台用 `nohup ... &` 或 `tmux`。
@@ -65,10 +65,10 @@ python -m a2a.server --port 9000
 
 ```bash
 # 终端 1:启动 echo worker(代号 bob)
-python -m a2a.echo_agent --id bob
+uv run -m a2a.echo_agent --id bob
 
 # 终端 2:启动你的交互客户端(代号 alice)
-python -m a2a.client --id alice --name "Alice (me)"
+uv run -m a2a.client --id alice --name "Alice (me)"
 ```
 
 在 alice 的 REPL 里:
@@ -299,7 +299,7 @@ from a2a.client import A2AClient
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
-| `Connection refused` | hub 没起 | 先跑 `python -m a2a.server` |
+| `Connection refused` | hub 没起 | 先跑 `uv run -m a2a.server` |
 | `delivered: False` | 目标 agent 没连 WS | 目标需要 `connect_ws()`;消息已落 DB,下次拉收件箱可拿到 |
 | `agent X not registered` | 派任务前没 register | 让对方先 `register`(任意时间) |
 | 收不到推送但能 `claim` 到任务 | WS 心跳断了 | 看 hub 日志,通常重启 client 即恢复 |

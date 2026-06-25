@@ -1,8 +1,9 @@
 """Echo demo agent: claims tasks of type=echo and submits the input as output.
 
 Usage:
-    python -m a2a.echo_agent            # registers as 'echo'
-    python -m a2a.echo_agent --id bob   # registers as 'bob'
+    uv run -m a2a.echo_agent              # registers as 'echo'
+    uv run -m a2a.echo_agent --id bob     # registers as 'bob'
+    # or, after `uv tool install a2a-helper`:  a2a-echo --id bob
 """
 
 from __future__ import annotations

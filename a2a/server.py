@@ -13,7 +13,8 @@ POST   /v1/tasks/{id}/claim?agent_id=X  claim a pending task
 POST   /v1/tasks/{id}/result?agent_id=X submit result for a task I own
 WS     /ws/{agent_id}                   live channel: messages + task.new events
 
-Run:    python -m a2a.server            (default 127.0.0.1:8765)
+Run:    uv run -m a2a.server           (default 127.0.0.1:8765)
+        # or, after `uv tool install a2a-helper`:  a2a-server --port 8765
 """
 
 from __future__ import annotations
