@@ -45,9 +45,9 @@ a2a-client = "a2a.client:main"
 a2a-echo   = "a2a.echo_agent:main"
 
 [project.urls]
-Homepage   = "https://github.com/yourname/a2a-helper"
-Issues     = "https://github.com/yourname/a2a-helper/issues"
-Changelog  = "https://github.com/yourname/a2a-helper/blob/main/CHANGELOG.md"
+Homepage   = "https://github.com/hubianluanma/a2a-helper"
+Issues     = "https://github.com/hubianluanma/a2a-helper/issues"
+Changelog  = "https://github.com/hubianluanma/a2a-helper/blob/main/CHANGELOG.md"
 
 # -- build --------------------------------------------------------------------
 

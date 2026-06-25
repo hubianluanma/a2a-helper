@@ -1,6 +1,6 @@
 # a2a-helper
 
-[![CI](https://img.shields.io/github/actions/workflow/status/yourname/a2a-helper/ci.yml?branch=main&label=CI)](https://github.com/yourname/a2a-helper/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/hubianluanma/a2a-helper/ci.yml?branch=main&label=CI)](https://github.com/hubianluanma/a2a-helper/actions)
 [![PyPI](https://img.shields.io/pypi/v/a2a-helper)](https://pypi.org/project/a2a-helper/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/pypi/pyversions/a2a-helper)](https://pypi.org/project/a2a-helper/)
@@ -138,6 +138,3 @@ these are deliberate omissions called out in the [docs](docs/CURSOR_USAGE.md#9-å
 [MIT](LICENSE).
 
 ---
-
-<sub>Replace `hubianluanma` in the badge URLs and `project.urls` in
-`pyproject.toml` with your GitHub handle before publishing.</sub>

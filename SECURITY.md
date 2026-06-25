@@ -11,8 +11,7 @@ fixes. Bump the major on breaking security changes.
 
 ## Reporting a vulnerability
 
-**Do not open a public GitHub issue.** Email **`<hubianluanma@gmail.com>`**
-(replace before publishing) with:
+**Do not open a public GitHub issue.** Email **`<hubianluanma@gmail.com>`** with:
 
 1. A description of the issue and its impact
 2. Steps to reproduce, or a proof-of-concept
@@ -50,4 +49,4 @@ laptop, deploy behind a reverse proxy that:
 - Restricts `/ws/*` to authenticated upgrades
 
 Future versions may add a built-in auth layer; track
-[issues](https://github.com/yourname/a2a-helper/issues) for the `auth` label.
+[issues](https://github.com/hubianluanma/a2a-helper/issues) for the `auth` label.
