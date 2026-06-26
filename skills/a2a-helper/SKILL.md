@@ -17,12 +17,13 @@ tasks to other agents.
 
 > Repo: https://github.com/hubianluanma/a2a-helper
 
-## Configuration — edit these 3 lines, nothing else
+## Configuration — edit these 4 lines, nothing else
 
 All templates below reference these shell variables. Change them once at
 the top of your session (or in your shell rc) and every command adapts:
 
 ```bash
+A2A_HOME=/path/to/a2a-helper        # local clone of the repo; only needed for commands that run a2a-* binaries (start hub, spawn workers). Skip if `a2a-server` / `a2a-client` / `a2a-echo` are already on PATH (e.g. after `uv tool install a2a-helper`).
 HUB_HTTP=http://127.0.0.1:8765      # hub HTTP base (change to e.g. http://192.168.1.10:8765 for cross-machine)
 HUB_WS=ws://127.0.0.1:8765          # WS base, same host as HUB_HTTP
 AGENT_ID=claude-main                # this session's agent id (change per session/instance)
@@ -31,9 +32,21 @@ AGENT_ID=claude-main                # this session's agent id (change per sessio
 If you'd rather not export them, paste them at the top of each snippet
 before running.
 
+**Which variables are required for which commands:**
+
+| Command kind                         | Needs                  |
+|--------------------------------------|------------------------|
+| Pure HTTP calls (send, dispatch, list, claim, submit, status) | `HUB_HTTP`, `AGENT_ID` |
+| Local `a2a-server` / `a2a-client` / `a2a-echo` | + `A2A_HOME` |
+| Pure WS events                       | `HUB_WS`               |
+
+So if you only want to *talk* to a hub running on another host, set just
+`HUB_HTTP` / `HUB_WS` / `AGENT_ID` — you don't need `a2a-helper` checked
+out locally at all.
+
 Other facts (rarely need to change):
 
-- State DB: `~/.a2a/a2a.db` (SQLite, WAL mode)
+- State DB: `~/.a2a/a2a.db` (SQLite, WAL mode) — only on the host running the hub
 - Default bind: `0.0.0.0` (LAN-reachable). Pass `--host 127.0.0.1` on
   untrusted networks.
 
@@ -135,8 +148,25 @@ curl -sf $HUB_HTTP/v1/agents >/dev/null && echo up || echo down
 If `down`, start the hub (ask the user first if this is their machine):
 
 ```bash
-nohup uv run -m a2a.server > ~/.a2a/hub.log 2>&1 &
+nohup uv --directory $A2A_HOME run -m a2a.server > ~/.a2a/hub.log 2>&1 &
 ```
+
+If the hub is already running elsewhere (e.g. on `172.16.22.238`), just set
+`HUB_HTTP` to that address — you don't need to start one locally.
+
+## Spawn a worker on this machine
+
+To run a worker that registers and processes tasks (e.g. `echo_agent`,
+handles tasks of type `echo` / `upper`):
+
+```bash
+nohup uv --directory $A2A_HOME run -m a2a.echo_agent --id $AGENT_ID > ~/.a2a/$AGENT_ID.log 2>&1 &
+```
+
+For a custom worker, write your own Python that uses `a2a.client.A2AClient`
+(see the 10-line pattern in the project README) and run it the same way.
+Workers only need `HUB_HTTP` / `HUB_WS` / `AGENT_ID`; they don't need a
+copy of the code at any specific path beyond the `uv --directory` invocation.
 
 ## Cross-machine
 
