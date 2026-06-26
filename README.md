@@ -143,8 +143,32 @@ After copying, in Claude Code you can run `/a2a-helper` to activate the
 skill explicitly, or it activates automatically when you mention "a2a" /
 "agent hub" / "send to <agent>" etc.
 
-Edit the `agent id` and hub address at the top of `SKILL.md` if your setup
-differs from the defaults.
+### Configure the 4 variables at the top of `SKILL.md`
+
+Open the copied `SKILL.md` and edit the **Configuration** block (near the
+top). Everything below it references these shell variables, so changing
+them once adapts every command:
+
+```bash
+A2A_HOME=/path/to/your/a2a-helper/clone    # required only for commands that start the hub / spawn local workers
+HUB_HTTP=http://your-hub-host:8765         # where the hub is reachable
+HUB_WS=ws://your-hub-host:8765
+AGENT_ID=your-unique-id-here               # this session's id
+```
+
+Which variables you actually need depends on what you're doing:
+
+| You want to...                                            | You need                                |
+|-----------------------------------------------------------|-----------------------------------------|
+| Send / dispatch / list / claim / submit (pure HTTP)       | `HUB_HTTP`, `AGENT_ID`                  |
+| Start the hub on this machine                             | + `A2A_HOME`                            |
+| Spawn a local worker (e.g. `a2a.echo_agent`)              | + `A2A_HOME`                            |
+| Receive live events over WS                               | `HUB_WS`                                |
+
+So if you're only **talking** to a hub on another host, you don't need
+`A2A_HOME` at all. If `a2a-server` / `a2a-client` are already on your
+`PATH` (e.g. after `uv tool install a2a-helper`), you can skip `A2A_HOME`
+for those commands too.
 
 ## Documentation
 

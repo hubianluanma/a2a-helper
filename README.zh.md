@@ -123,7 +123,27 @@ Cursor 单独的项目也可以用 `.cursor/skills/`(同样布局、同样的 `S
 
 拷过去之后,在 Claude Code 里可以直接 `/a2a-helper` 显式激活,或在对话里提到 "a2a" / "agent hub" / "给某个 agent 发消息" 等关键词时自动激活。Cursor 同样会自动识别。
 
-如果你的环境和默认不一样(端口、agent id 等),改 `SKILL.md` 顶部的几行。
+### 配置 `SKILL.md` 顶部的 4 个变量
+
+打开拷过去的 `SKILL.md`,编辑**顶部**的 Configuration 块。下面的所有命令都引用这几个变量,改一次全部生效:
+
+```bash
+A2A_HOME=/path/to/your/a2a-helper/clone    # 仅在启动 hub / 拉起本地 worker 时需要
+HUB_HTTP=http://your-hub-host:8765         # hub 的可达地址
+HUB_WS=ws://your-hub-host:8765
+AGENT_ID=your-unique-id-here               # 本次会话的 id
+```
+
+要哪些变量取决于你要干什么:
+
+| 你想...                                            | 需要                              |
+|----------------------------------------------------|-----------------------------------|
+| 发送消息 / 派任务 / 列表 / claim / submit(纯 HTTP)| `HUB_HTTP`、`AGENT_ID`            |
+| 在本机启动 hub                                     | + `A2A_HOME`                      |
+| 在本机起 worker(如 `a2a.echo_agent`)              | + `A2A_HOME`                      |
+| 接收 WS 实时推送                                   | `HUB_WS`                          |
+
+所以**只跟远程 hub 通信**的话,根本不需要 `A2A_HOME`。如果 `a2a-server` / `a2a-client` 已经在 PATH 里(比如 `uv tool install a2a-helper` 之后),这些命令也能跳过 `A2A_HOME`。
 
 ## 文档
 
