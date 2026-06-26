@@ -17,14 +17,25 @@ tasks to other agents.
 
 > Repo: https://github.com/hubianluanma/a2a-helper
 
-## Hub
+## Configuration — edit these 3 lines, nothing else
 
-- HTTP base: `http://127.0.0.1:8765` (default — confirm with the user if unsure)
-- WS:        `ws://127.0.0.1:8765`
-- This session's agent id: `claude-main` (change if the user has a different setup)
-- State:     `~/.a2a/a2a.db` (SQLite, WAL mode)
-- Bind:      by default `0.0.0.0` (LAN-reachable). Use `--host 127.0.0.1`
-  on untrusted networks.
+All templates below reference these shell variables. Change them once at
+the top of your session (or in your shell rc) and every command adapts:
+
+```bash
+HUB_HTTP=http://127.0.0.1:8765      # hub HTTP base (change to e.g. http://192.168.1.10:8765 for cross-machine)
+HUB_WS=ws://127.0.0.1:8765          # WS base, same host as HUB_HTTP
+AGENT_ID=claude-main                # this session's agent id (change per session/instance)
+```
+
+If you'd rather not export them, paste them at the top of each snippet
+before running.
+
+Other facts (rarely need to change):
+
+- State DB: `~/.a2a/a2a.db` (SQLite, WAL mode)
+- Default bind: `0.0.0.0` (LAN-reachable). Pass `--host 127.0.0.1` on
+  untrusted networks.
 
 ## Endpoints
 
@@ -43,49 +54,50 @@ tasks to other agents.
 
 ## Decision: message vs task
 
-| User says...                       | Use                                     |
-|------------------------------------|-----------------------------------------|
-| "Tell X ..." / "Send X a message"  | `POST /v1/messages` (fire-and-forget)   |
-| "Give X a task to ..."             | `POST /v1/tasks` + poll until `done`    |
-| "Did anyone message me?"           | `GET /v1/messages?agent=claude-main`    |
-| "What's the status of task <id>?"  | `GET /v1/tasks/<id>`                    |
-| "Who is online?"                   | `GET /v1/agents`                        |
+| User says...                       | Use                                                  |
+|------------------------------------|------------------------------------------------------|
+| "Tell X ..." / "Send X a message"  | `POST $HUB_HTTP/v1/messages` (fire-and-forget)       |
+| "Give X a task to ..."             | `POST $HUB_HTTP/v1/tasks` + poll until `done`        |
+| "Did anyone message me?"           | `GET $HUB_HTTP/v1/messages?agent=$AGENT_ID`          |
+| "What's the status of task <id>?"  | `GET $HUB_HTTP/v1/tasks/<id>`                        |
+| "Who is online?"                   | `GET $HUB_HTTP/v1/agents`                            |
 
 A message has no result. A task has a result the worker returns via
 `POST /v1/tasks/{id}/result`; the originator polls until `status == "done"`.
 
 ## Ready-to-paste templates
 
-Always use `curl -s` and pipe JSON through `python3 -m json.tool` for readable
-output. **Never run `a2a-client` interactively in a Bash tool call** — it's
-a REPL and will hang.
+All snippets assume `$HUB_HTTP` / `$HUB_WS` / `$AGENT_ID` are set (top of
+file). Always use `curl -s` and pipe JSON through `python3 -m json.tool` for
+readable output. **Never run `a2a-client` interactively in a Bash tool
+call** — it's a REPL and will hang.
 
 ```bash
 # register self (idempotent — safe at the start of each session)
-curl -s -X POST http://127.0.0.1:8765/v1/agents/register \
+curl -s -X POST $HUB_HTTP/v1/agents/register \
   -H 'Content-Type: application/json' \
-  -d '{"id":"claude-main","name":"Claude Code","skills":["chat","code"]}'
+  -d "{\"id\":\"$AGENT_ID\",\"name\":\"Claude Code\",\"skills\":[\"chat\",\"code\"]}"
 
 # send a p2p message
-curl -s -X POST 'http://127.0.0.1:8765/v1/messages?from_agent=claude-main' \
+curl -s -X POST "$HUB_HTTP/v1/messages?from_agent=$AGENT_ID" \
   -H 'Content-Type: application/json' \
   -d '{"to_agent":"alice","content":{"text":"start working"}}'
 
 # dispatch a task and wait for the result
-TID=$(curl -s -X POST 'http://127.0.0.1:8765/v1/tasks?from_agent=claude-main' \
+TID=$(curl -s -X POST "$HUB_HTTP/v1/tasks?from_agent=$AGENT_ID" \
   -H 'Content-Type: application/json' \
   -d '{"to_agent":"echo","type":"echo","input":{"msg":"ping"}}' \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["task_id"])')
-while [ "$(curl -s http://127.0.0.1:8765/v1/tasks/$TID | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')" != "done" ]; do sleep 0.5; done
-curl -s http://127.0.0.1:8765/v1/tasks/$TID
+while [ "$(curl -s $HUB_HTTP/v1/tasks/$TID | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')" != "done" ]; do sleep 0.5; done
+curl -s $HUB_HTTP/v1/tasks/$TID
 
 # worker side: claim + execute + submit
-TID=$(curl -s 'http://127.0.0.1:8765/v1/tasks?agent=claude-main&status=pending' \
+TID=$(curl -s "$HUB_HTTP/v1/tasks?agent=$AGENT_ID&status=pending" \
   | python3 -c 'import sys,json;ts=json.load(sys.stdin);print(ts[-1]["id"] if ts else "")')
 [ -z "$TID" ] && echo "no pending tasks" && exit 0
-curl -s -X POST "http://127.0.0.1:8765/v1/tasks/$TID/claim?agent_id=claude-main"
+curl -s -X POST "$HUB_HTTP/v1/tasks/$TID/claim?agent_id=$AGENT_ID"
 # ... do the work ...
-curl -s -X POST "http://127.0.0.1:8765/v1/tasks/$TID/result?agent_id=claude-main" \
+curl -s -X POST "$HUB_HTTP/v1/tasks/$TID/result?agent_id=$AGENT_ID" \
   -H 'Content-Type: application/json' \
   -d '{"output":{"result":"..."}}'
 ```
@@ -97,7 +109,7 @@ uv run -c "
 from a2a.client import A2AClient
 import asyncio
 async def main():
-    c = A2AClient('http://127.0.0.1:8765','ws://127.0.0.1:8765','claude-main','Claude Code')
+    c = A2AClient('$HUB_HTTP', '$HUB_WS', '$AGENT_ID', 'Claude Code')
     await c.register()
     await c.send_message('alice', {'text':'start working'})
 asyncio.run(main())
@@ -117,7 +129,7 @@ asyncio.run(main())
 If a2a commands fail with `Connection refused`:
 
 ```bash
-curl -sf http://127.0.0.1:8765/v1/agents >/dev/null && echo up || echo down
+curl -sf $HUB_HTTP/v1/agents >/dev/null && echo up || echo down
 ```
 
 If `down`, start the hub (ask the user first if this is their machine):
@@ -128,6 +140,13 @@ nohup uv run -m a2a.server > ~/.a2a/hub.log 2>&1 &
 
 ## Cross-machine
 
-If the hub runs on a different host, replace `127.0.0.1` with that host's
-IP (e.g. `http://172.16.22.238:8765`). Make sure the hub's host firewall
+Change the top-of-file `HUB_HTTP` (and `HUB_WS`) to the host where the hub
+runs, e.g.:
+
+```bash
+HUB_HTTP=http://172.16.22.238:8765
+HUB_WS=ws://172.16.22.238:8765
+```
+
+All templates below adapt automatically. Make sure the hub's host firewall
 allows the port — see [SECURITY.md](https://github.com/hubianluanma/a2a-helper/blob/main/SECURITY.md).
